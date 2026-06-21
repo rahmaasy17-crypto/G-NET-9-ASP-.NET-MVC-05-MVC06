@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GymManagement.BLL.Common;
 using GymManagement.BLL.Services.Interfaces;
 using GymManagement.BLL.ViewModels.SessionViewModels;
 using GymManagement.DAL.Data.Models;
@@ -47,24 +48,24 @@ namespace GymManagement.BLL.Services.Classes
         }
 
 
-        public async Task<bool> CreateSessionAsync(CreateSessionViewModel model, CancellationToken c = default)
+        public async Task<Result> CreateSessionAsync(CreateSessionViewModel model, CancellationToken c = default)
         {
-            if (model.EndDate <= model.StartDate) return false;
-            if (model.StartDate <= DateTime.Now) return false;
-            if (model.Capacity < 1 || model.Capacity > 25) return false;
+            if (model.EndDate <= model.StartDate) return Result.Validation("End Date Must Be Greater Than Start Date");
+            if (model.StartDate <= DateTime.Now) return Result.Validation("Start Date Must be in the Future");
+            if (model.Capacity < 1 || model.Capacity > 25) return Result.Validation("Capacity Must Be Between 1 and 25");
 
             var trainer = await _unitOfWork.GetRepository<Trainer>().GetByIDAsync(model.TrainerId);
 
-            if (trainer is null) return false;
+            if (trainer is null) return Result.NotFound("Trainer Not Found");
 
             var category = await _unitOfWork.GetRepository<Category>().GetByIDAsync(model.CategoryId);
 
-            if (category is null) return false;
+            if (category is null) return Result.NotFound("Category Not Found");
 
             var isValid = Enum.TryParse<Specialties>(category.CategoryName,true,out var categorySpecialty);
 
             if (!isValid || trainer.Spectatty != categorySpecialty)
-                return false;
+                return Result.Validation("Trainer and Category Must be the Same !");
 
             var session = _mapper.Map<CreateSessionViewModel, Session>(model);
 
@@ -72,7 +73,7 @@ namespace GymManagement.BLL.Services.Classes
 
             var result = await _unitOfWork.SaveChangesAsync();
 
-            return result > 0;
+            return result > 0? Result.OK():Result.Fail("Failed to Create Session");
         }
 
       

@@ -35,12 +35,12 @@ namespace GymManagement.PL.Controllers
                 await PopulateDropDownListAsync();//عشان تفضل معايا لو رجعت من غير مدخل الداتا عشان فيه خطا معين
                 return View(model); }
             var result = await _sessionService.CreateSessionAsync(model, c);
-            if (result)
+            if (result.success)
              {   TempData["successMessage"] = "Session Created Successfully";
                 return RedirectToAction(nameof(Index));
             }
             else
-                TempData["ErrorMessage"] = "Failed to Create Session";
+                TempData["ErrorMessage"] = result.error;
             await PopulateDropDownListAsync();
             return View(model);
         }
