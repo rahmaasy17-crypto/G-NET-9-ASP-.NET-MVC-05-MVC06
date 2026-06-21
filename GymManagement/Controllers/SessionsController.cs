@@ -51,5 +51,19 @@ namespace GymManagement.PL.Controllers
             //ايه القيمه اللي معاه وايه اللي هيظهر فلليست 
             ViewBag.Categories = new SelectList(await _sessionService.GetCategoriesForDropDownAsync(), "Id", "CategoryName");
         }
+        [HttpGet]
+        [HttpGet]
+        public async Task<IActionResult> Details(int id, CancellationToken ct)
+        {
+            var result = await _sessionService.GetSessionByIdAsync(id, ct);
+
+            if (result.success)
+                return View(result.value);
+            else
+            {
+                TempData["ErrorMessage"] = result.error;
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

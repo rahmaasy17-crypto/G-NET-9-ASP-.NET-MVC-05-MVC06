@@ -78,9 +78,17 @@ namespace GymManagement.BLL.Services.Classes
 
       
 
-        public Task<SessionViewModel?> GetSessionDetailsByIdAsync(int sessionId, CancellationToken c = default)
+        public async Task<Result<SessionViewModel>> GetSessionByIdAsync(int sessionId, CancellationToken c = default)
         {
-            throw new NotImplementedException();
+            var session= await _unitOfWork.SessionReposatory.GetSessionByIdWithTrainerAndCategoryAsync(sessionId, c);
+            if (session is null) return Result<SessionViewModel>.NotFound("Session Not Found");
+            else
+            {
+                var mappedsession= _mapper.Map<Session,SessionViewModel>(session);
+                mappedsession.AvailableSlots=mappedsession.Capacity-await _unitOfWork.SessionReposatory.GetCountOfBookedSlotsAsync(sessionId);
+                return Result<SessionViewModel>.OK(mappedsession);
+            }
+        
         }
 
         public Task<UpdateSessionViewModel?> GetSessionToUpdateAsync(int sessionId, CancellationToken c = default)

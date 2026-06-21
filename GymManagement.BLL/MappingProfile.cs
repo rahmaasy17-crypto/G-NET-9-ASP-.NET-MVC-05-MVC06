@@ -57,9 +57,14 @@ namespace GymManagement.BLL
         }
         private void MapSession()
         {
-            CreateMap<CreateSessionViewModel, SessionViewModel>();
+            CreateMap<CreateSessionViewModel, Session>();
             CreateMap<Trainer,TrainerSelectViewModel>();
             CreateMap<Category, CategorySelectViewModel>();
+            CreateMap<Session, SessionViewModel>().
+                ForMember(d => d.TrainerName, opt => opt.MapFrom(s=>s.Trainer.Name))
+                .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.Category.CategoryName));
+
+            ;
         }
     }
 }
