@@ -1,0 +1,25 @@
+using GymManagement.BLL.ViewModels.MemberViewModels;
+using GymManagement.BLL.ViewModels.SessionViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace GymManagement.BLL.Services.Interfaces
+{
+    public interface ISessionService
+    {
+        Task<IEnumerable<SessionViewModel>?> GetAllSessionsAsync(CancellationToken c = default);
+        Task<bool> CreateSessionAsync(CreateSessionViewModel model, CancellationToken c = default);
+        Task<IEnumerable<TrainerSelectViewModel>> GetTrainersForDropDownAsync(CancellationToken c = default);
+        Task<IEnumerable<CategorySelectViewModel>> GetCategoriesForDropDownAsync(CancellationToken c = default);
+
+
+
+        Task<SessionViewModel?> GetSessionDetailsByIdAsync(int sessionId, CancellationToken c = default);
+        Task<UpdateSessionViewModel?> GetSessionToUpdateAsync(int sessionId, CancellationToken c = default);
+        Task<bool> UpdateSessionDetailsAsync(int id, UpdateSessionViewModel model, CancellationToken c = default);
+        Task<bool> RemoveSessionAsync(int id, CancellationToken c = default); 
+    }
+}
