@@ -91,19 +91,67 @@ namespace GymManagement.BLL.Services.Classes
         
         }
 
-        public Task<UpdateSessionViewModel?> GetSessionToUpdateAsync(int sessionId, CancellationToken c = default)
-        {
-            throw new NotImplementedException();
-        }
+      
 
         public Task<bool> RemoveSessionAsync(int id, CancellationToken c = default)
         {
             throw new NotImplementedException();
         }
-
-        public Task<bool> UpdateSessionDetailsAsync(int id, UpdateSessionViewModel model, CancellationToken c = default)
+        public async Task<Result<UpdateSessionViewModel>> GetSessionToUpdateAsync(int sessionId, CancellationToken c = default)
         {
-            throw new NotImplementedException();
+            var session = await _unitOfWork.SessionReposatory
+                .GetByIDAsync(sessionId, c);
+
+            if (session is null)return Result<UpdateSessionViewModel>.NotFound("Session Not Found");
+
+            if (session.StartDate <= DateTime.Now)return Result<UpdateSessionViewModel>.Fail("Cannot Update Ongoing Sessions !");
+
+            var bookingCount = await _unitOfWork.SessionReposatory.GetCountOfBookedSlotsAsync(sessionId, c);
+
+            if (bookingCount > 0)return Result<UpdateSessionViewModel>.Fail("Cannot Update Session Already Booked");
+
+            var mappedSession =_mapper.Map<Session, UpdateSessionViewModel>(session);
+
+            return Result<UpdateSessionViewModel>.OK(mappedSession);
+        }
+
+        public async Task<Result> UpdateSessionDetailsAsync(int id, UpdateSessionViewModel model, CancellationToken c = default)
+        {
+            var session = await _unitOfWork.SessionReposatory.GetByIDAsync(id, c);
+
+            if (session is null)return Result.NotFound("Session Not Found");
+
+            if (session.StartDate <= DateTime.Now)return Result.Fail("Cannot Edit Session That Already Started!");
+
+            if (model.EndDate <= model.StartDate)return Result.Validation("End Date Must Be After Start Date");
+
+            var bookedCount = await _unitOfWork.SessionReposatory.GetCountOfBookedSlotsAsync(id);
+
+            if (bookedCount > 0)return Result.Fail("Cannot Update Session Booked With Members");
+
+            if (model.StartDate <= DateTime.Now)return Result.Validation("Start Date Must be in the Future");
+
+            var trainer = await _unitOfWork.GetRepository<Trainer>().GetByIDAsync(model.TrainerId);
+
+            if (trainer is null)return Result.NotFound("Trainer Not Found");
+
+            var category = await _unitOfWork.GetRepository<Category>().GetByIDAsync(session.CategoryId);
+
+            var isValid = Enum.TryParse<Specialties>(category?.CategoryName,true,out var CategorySpecialty);
+
+            if (!isValid || trainer.Spectatty != CategorySpecialty)
+               return Result.Validation("Trainer And Category Not Matched !");
+
+            _mapper.Map<UpdateSessionViewModel, Session>(model);
+        //    _mapper.Map(model,session);//with reverse
+            session.UpdatedAt = DateTime.Now;
+
+
+            _unitOfWork.SessionReposatory.Update(session);
+            var result=await _unitOfWork.SaveChangesAsync(c);
+
+            return result > 0 ? Result.OK() : Result.Fail("Failed To Update Session");
+
         }
 
         public async Task<IEnumerable<TrainerSelectViewModel>> GetTrainersForDropDownAsync(CancellationToken c = default)
