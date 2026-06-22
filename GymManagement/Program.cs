@@ -4,13 +4,15 @@ using GymManagement.BLL.Services.Interfaces;
 using GymManagement.DAL.Data.DbContexts;
 using GymManagement.DAL.Repositories.classes;
 using GymManagement.DAL.Repositories.interfaces;
+using GymManagement.PL;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace GymManagement
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             //to create obj of container , get actions and views
@@ -29,7 +31,12 @@ namespace GymManagement
             builder.Services.AddScoped<ISessionReposatory, SessionReposatory>();
             builder.Services.AddScoped<ISessionService, SessionService>();
             builder.Services.AddAutoMapper(m => m.AddProfile(new MappingProfile()));//MappingProfile عشان يعرف هيحول ازاي هيروح يدور في  
+        
+            
             var app = builder.Build();
+            //seeding
+            await app.MigrateAndSeedDataAsync();
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
