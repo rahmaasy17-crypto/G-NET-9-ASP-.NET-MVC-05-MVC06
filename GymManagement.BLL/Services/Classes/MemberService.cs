@@ -22,11 +22,13 @@ namespace GymManagement.BLL.Services.Classes
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAttachmentService _attachmentService;
 
-        public MemberService(IUnitOfWork unitOfWork ,IMapper mapper ) //TO inject repo
+        public MemberService(IUnitOfWork unitOfWork ,IMapper mapper ,IAttachmentService attachmentService) //TO inject repo
         {
             _unitOfWork = unitOfWork;
          _mapper = mapper;
+           _attachmentService = attachmentService;
         }
 
 
@@ -47,10 +49,23 @@ namespace GymManagement.BLL.Services.Classes
             var EmailExist =await _unitOfWork.GetRepository<Member>().AnyAsync(x => x.Email == model.Email, c);
             var PhoneExist =await _unitOfWork.GetRepository<Member>().AnyAsync(x => x.Phone == model.Phone, c);
             if (PhoneExist || EmailExist) return false;
-            var member = _mapper.Map<Member>(model);    
+
+            //upload photo
+            var storedphotoname = await _attachmentService.UploadAsync(model.PhotoFile.OpenReadStream(), model.PhotoFile.FileName, "MembersPhoto",c);
+            if(string.IsNullOrEmpty(storedphotoname)) return false;
+
+
+
+            var member = _mapper.Map<Member>(model);  
+            member.Photo= storedphotoname;
             _unitOfWork.GetRepository<Member>().Add(member);
             var result =await _unitOfWork.SaveChangesAsync();
-            return result>0;
+            if (result > 0) return true;
+            else 
+            {
+                //عشان لو الالشخص منضقش ميرفش الصوره علي الفاضي وتفضل موجوده
+            return false;
+            }
         }
 
 

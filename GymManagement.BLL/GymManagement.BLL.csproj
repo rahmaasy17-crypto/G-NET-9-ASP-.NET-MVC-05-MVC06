@@ -9,7 +9,9 @@
   <ItemGroup>
     <ProjectReference Include="..\GymManagement.DAL\GymManagement.DAL.csproj" />
   </ItemGroup>
-
+ <ItemGroup>
+	 <FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
   <ItemGroup>
     <Folder Include="ViewModels\HealthRecordViewModels\" />
   </ItemGroup>

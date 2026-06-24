@@ -11,7 +11,8 @@
         <header class="mb-4">
             <h3 class="text-primary-color">Add Member</h3>
         </header>
-        <form asp-controller="Members" asp-action="CreateMember" method="post"> @*الفورم اللي هستقبل جواها الداتا*@
+        <form asp-controller="Members" asp-action="CreateMember" method="post" enctype="multipart/form-data">
+            @*الفورم اللي هستقبل جواها الداتا*@
 
             <!-- Step navigation -->
             <ul class="nav nav-tabs mb-4" id="addMemberTabs" role="tablist">
