@@ -64,6 +64,7 @@ namespace GymManagement.BLL.Services.Classes
             else 
             {
                 //عشان لو الالشخص منضقش ميرفش الصوره علي الفاضي وتفضل موجوده
+                _attachmentService.Delete(storedphotoname, "MembersPhoto");
             return false;
             }
         }
